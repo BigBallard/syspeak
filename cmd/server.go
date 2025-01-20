@@ -1,6 +1,9 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"syspeak/internal/server"
+)
 
 var ServerCmd = &cobra.Command{
 	Use: "server",
@@ -8,6 +11,8 @@ var ServerCmd = &cobra.Command{
 
 func init() {
 	ServerCmd.Run = func(cmd *cobra.Command, args []string) {
-		println("server called")
+		s := server.NewServerWithOptions()
+		s.Start()
+		println("Ending command")
 	}
 }
