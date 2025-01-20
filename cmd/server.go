@@ -11,8 +11,7 @@ var ServerCmd = &cobra.Command{
 
 func init() {
 	ServerCmd.Run = func(cmd *cobra.Command, args []string) {
-		s := server.NewServerWithOptions()
+		s := server.NewDefaultServer()
 		s.Start()
-		println("Ending command")
 	}
 }

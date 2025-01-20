@@ -43,8 +43,12 @@ func (s *Server) Start() error {
 // Shutdown attempts a graceful shutdown of the server and its runtime services. Any errors that occur during shutdown
 // are returned. Not that any error returned here will also show as the error from Start.
 func (s *Server) Shutdown() error {
-	s.logger.Info("Stopping down http server")
-	return s.fiberApp.Shutdown()
+	if s.fiberApp.Server().GetOpenConnectionsCount() > 0 {
+		s.logger.Info("Stopping http server, waiting for connections to close...")
+	}
+	sdErr := s.fiberApp.Shutdown()
+	s.logger.Info("Http server shutdown")
+	return sdErr
 }
 
 // Options provides optional parameters that can be used to customize aspects of the SysPeak server.
@@ -54,18 +58,17 @@ type Options struct {
 
 // NewDefaultServer provides a Server with default parameters.
 func NewDefaultServer() Server {
-	return Server{
-		logger:   logging.NewSysSpeakLogger("server"),
-		fiberApp: http.NewConfiguredFiberApp(),
-	}
-}
-
-// NewServerWithOptions provides a new Server with the Options passed applied.
-func NewServerWithOptions(options Options) Server {
 	s := Server{
 		logger:   logging.NewSysSpeakLogger("server"),
 		fiberApp: http.NewConfiguredFiberApp(),
 	}
+	s.fiberApp.Get("/status", HandleGetStatus)
+	return s
+}
+
+// NewServerWithOptions provides a new Server with the Options passed applied.
+func NewServerWithOptions(options Options) Server {
+	s := NewDefaultServer()
 	if options.Logger != nil {
 		s.logger = options.Logger
 	}
